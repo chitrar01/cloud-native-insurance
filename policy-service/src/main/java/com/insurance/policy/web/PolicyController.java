@@ -2,42 +2,65 @@ package com.insurance.policy.web;
 
 import com.insurance.policy.domain.Policy;
 import com.insurance.policy.service.PolicyService;
-import com.insurance.policy.web.dto.PolicyDto;
+import com.insurance.policy.web.dto.PolicyCreateRequest;
+import com.insurance.policy.web.dto.PolicyResponse;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
 @RequestMapping("/policies")
-@RequiredArgsConstructor
 public class PolicyController {
 
-    private final PolicyService policyService;
-    private final PolicyMapper mapper;
+    private final PolicyService service;
+
+    public PolicyController(PolicyService service) {
+        this.service = service;
+    }
 
     @PostMapping
-    public ResponseEntity<PolicyResponse> create(@Valid @RequestBody PolicyDto dto) {
-        Policy savedPolicy = policyService.save(mapper.toEntity(dto));
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toResponse(savedPolicy));
+    public ResponseEntity<PolicyResponse> create(@Valid @RequestBody PolicyCreateRequest req) {
+        Policy toSave = new Policy(
+                req.policyNumber(),
+                req.customerId(),
+                req.coverageAmount(),
+                req.effectiveDate()
+        );
+        Policy saved = service.create(toSave);
+
+        PolicyResponse resp = new PolicyResponse(
+                saved.getId(),
+                saved.getPolicyNumber(),
+                saved.getCustomerId(),
+                saved.getCoverageAmount(),
+                saved.getEffectiveDate()
+        );
+
+        return ResponseEntity.created(URI.create("/policies/" + saved.getId())).body(resp);
     }
 
     @GetMapping
     public List<PolicyResponse> all() {
-        return policyService.findAll().stream().map(mapper::toResponse).toList();
+        return service.findAll().stream()
+                .map(p -> new PolicyResponse(
+                        p.getId(), p.getPolicyNumber(), p.getCustomerId(),
+                        p.getCoverageAmount(), p.getEffectiveDate()))
+                .toList();
     }
 
     @GetMapping("/{id}")
     public PolicyResponse one(@PathVariable Long id) {
-        return mapper.toResponse(policyService.findById(id));
+        var p = service.findById(id);
+        return new PolicyResponse(p.getId(), p.getPolicyNumber(), p.getCustomerId(),
+                p.getCoverageAmount(), p.getEffectiveDate());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        policyService.delete(id);
+        service.delete(id);
         return ResponseEntity.noContent().build();
     }
 }
