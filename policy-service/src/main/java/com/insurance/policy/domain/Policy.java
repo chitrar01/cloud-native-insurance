@@ -4,25 +4,24 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "policies", indexes = {
-        @Index(name = "uk_policy_number", columnList = "policyNumber", unique = true)
-})
+@Table(name = "policies", schema = "PUBLIC")   
 public class Policy {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 16)
+    @Column(name = "policy_number", nullable = false, unique = true, length = 16)
     private String policyNumber;
 
-    @Column(nullable = false, length = 64)
+    @Column(name = "customer_id", nullable = false, length = 64)
     private String customerId;
 
-    @Column(nullable = false)
+    @Column(name = "coverage_amount", nullable = false)
     private Double coverageAmount;
 
-    @Column(nullable = false)
+    @Column(name = "effective_date", nullable = false)
     private LocalDate effectiveDate;
 
     protected Policy() {} // JPA
