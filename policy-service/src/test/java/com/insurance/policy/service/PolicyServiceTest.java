@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.mockito.ArgumentCaptor;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -51,13 +50,15 @@ public class PolicyServiceTest {
     }
 
     @Test
-    @DisplayName("getByPolicyNumber: returns policy when found")
-    void testGetByPolicyNumberFound() {
-        Policy existingPolicy = new Policy("POL-12345", "CUST001", 100000.0, java.time.LocalDate.now());
-        when(repo.findByPolicyNumber("POL-12345")).thenReturn(Optional.of(existingPolicy));
-
-
-        assertThat(policyService.).isPresent();
-        assertThat(result.get().getCustomerId()).isEqualTo("CUST001");
+    @DisplayName("get: finds by id or throws PolicyNotFoundException")
+    void testGetPolicyByIdNotFound() {
+        when(repo.findById(1L)).thenReturn(Optional.empty());
+        
+        assertThatThrownBy(() -> policyService.findById(1L))
+                .isInstanceOf(PolicyNotFoundException.class)
+                .hasMessageContaining("Policy not found with id: 1");
+        
+        verify(repo).findById(1L);
     }
+    
 }
