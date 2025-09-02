@@ -1,4 +1,4 @@
-# policy-service
+# Policy-service
 
 Spring Boot service for the Cloud-Native Insurance project.
 
