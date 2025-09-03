@@ -38,7 +38,7 @@ public class PolicyServiceTest {
     @DisplayName("create: throws exception when policyNumber already exists")
     void testCreatePolicyDuplicate() {
         Policy existingPolicy = new Policy("POL-12345", "CUST001", 100000.0, java.time.LocalDate.now());
-        when(repo.findByPolicyNumber("POL-12345")).thenReturn(Optional.of(existingPolicy));
+        when(repo.existsByPolicyNumber("POL-12345")).thenReturn(Optional.of(existingPolicy));
 
         Policy newPolicy = new Policy("POL-12345", "CUST002", 150000.0, java.time.LocalDate.now().plusDays(1));
         
@@ -56,7 +56,7 @@ public class PolicyServiceTest {
         
         assertThatThrownBy(() -> policyService.findById(1L))
                 .isInstanceOf(PolicyNotFoundException.class)
-                .hasMessageContaining("Policy not found with id: 1");
+                .hasMessageContaining("Policy not found: 1");
         
         verify(repo).findById(1L);
     }

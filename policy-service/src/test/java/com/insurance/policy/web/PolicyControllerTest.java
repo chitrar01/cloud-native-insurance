@@ -37,11 +37,82 @@ public class PolicyControllerTest {
                         "policyNumber": "POL-12345",
                         "customerId": "CUST001",
                         "coverageAmount": 100000.0,
-                        "startDate": "%s"
+                        "effectiveDate": "%s"
                     }
                     """.formatted(java.time.LocalDate.now())
                 ))
             .andExpect(status().isCreated())
             .andExpect(header().string("Location", "/api/policies/POL-12345"));
     }
+
+    @Test
+    @DisplayName("POST validates request and returns ProblemDetail (400)")
+    void testCreatePolicyValidationError() throws Exception {
+        // Use mockMvc to perform POST request with invalid data
+        mockMvc.perform(post("/api/policies")
+                .contentType("application/json")
+                .content("""
+                    {
+                        "policyNumber": "",
+                        "customerId": "CUST001",
+                        "coverageAmount": -100000.0,
+                        "effectiveDate": "%s"
+                    }
+                    """.formatted(java.time.LocalDate.now().plusDays(1))
+                ))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.type").value("about:blank"))
+            .andExpect(jsonPath("$.title").value("Bad Request"))
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.detail").exists())
+            .andExpect(jsonPath("$.instance").value("/api/policies"))
+            .andExpect(jsonPath("$.errors.policyNumber").value("Policy number is required"))
+            .andExpect(jsonPath("$.errors.coverageAmount").value("Coverage amount must be greater than or equal to 1.0"));
+    }
+
+    @Test
+    @DisplayName("Post Duplicate Policy Number returns 409 Conflict")
+    void testCreatePolicyDuplicatePolicyNumber() throws Exception {
+        // When
+        when(policyService.create(any()))
+            .thenThrow(new com.insurance.policy.service.DuplicatePolicyNumberException("Duplicate policy number: POL-12345"));
+
+        // Use mockMvc to perform POST request with duplicate policy number
+        mockMvc.perform(post("/api/policies")
+                .contentType("application/json")
+                .content("""
+                    {
+                        "policyNumber": "POL-12345",
+                        "customerId": "CUST001",
+                        "coverageAmount": 100000.0,
+                        "effectiveDate": "%s"
+                    }
+                    """.formatted(java.time.LocalDate.now().plusDays(1))
+                ))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.type").value("about:blank"))
+            .andExpect(jsonPath("$.title").value("Conflict"))
+            .andExpect(jsonPath("$.status").value(409))
+            .andExpect(jsonPath("$.detail").value("Duplicate policy number: POL-12345"))
+            .andExpect(jsonPath("$.instance").value("/api/policies"));
+    }
+
+    @Test
+    @DisplayName("GET /api/policies/{id}: returns 404 Not Found when policy does not exist")
+    void testGetPolicyNotFound() throws Exception {
+        // When
+        when(policyService.findById(1L))
+            .thenThrow(new com.insurance.policy.service.PolicyNotFoundException(1L));
+
+        // Use mockMvc to perform GET request for non-existent policy
+        mockMvc.perform(get("/api/policies/1"))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.type").value("about:blank"))
+            .andExpect(jsonPath("$.title").value("Not Found"))
+            .andExpect(jsonPath("$.status").value(404))
+            .andExpect(jsonPath("$.detail").value("Policy not found : 1"))
+            .andExpect(jsonPath("$.instance").value("/api/policies/1"));
+    }
+
+
 }
