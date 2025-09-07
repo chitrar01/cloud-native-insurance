@@ -7,12 +7,13 @@ import com.insurance.policy.web.dto.PolicyResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/policies")
+@RequestMapping("/api/policies")
 public class PolicyController {
 
     private final PolicyService service;
@@ -20,7 +21,8 @@ public class PolicyController {
     public PolicyController(PolicyService service) {
         this.service = service;
     }
-
+    
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<PolicyResponse> create(@Valid @RequestBody PolicyCreateRequest req) {
         Policy toSave = new Policy(
@@ -41,7 +43,7 @@ public class PolicyController {
 
         return ResponseEntity.created(URI.create("/policies/" + saved.getId())).body(resp);
     }
-
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping
     public List<PolicyResponse> all() {
         return service.findAll().stream()
@@ -51,6 +53,7 @@ public class PolicyController {
                 .toList();
     }
 
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping("/{id}")
     public PolicyResponse one(@PathVariable Long id) {
         var p = service.findById(id);
@@ -58,6 +61,7 @@ public class PolicyController {
                 p.getCoverageAmount(), p.getEffectiveDate());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);

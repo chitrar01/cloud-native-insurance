@@ -20,7 +20,7 @@ public class ErrorHandler {
         var errors = ex.getBindingResult().getFieldErrors().stream()
             .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage, (a,b)->a));
         var pd = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
-        pd.setTitle("Validation failed");
+        pd.setTitle("Bad Request");
         pd.setType(URI.create("https://api.example.com/errors/invalid-request"));
         pd.setDetail(errors.entrySet().stream().findFirst().map(Map.Entry::toString).orElse("Invalid input"));
         pd.setProperty("errors", errors);
