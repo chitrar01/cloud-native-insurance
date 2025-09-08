@@ -21,6 +21,12 @@ spring:
     console:
       enabled: true
       path: /h2-console  # optional but handy
-
+app:
+   jwt:
+     # 32+ chars (256-bit) secret; for demo only. 
+     # In production, we should use a secure vault or environment variable
+     secret: "change-me-change-me-change-me-change-me-256-bit"
+     issuer: "policy-service"
+     ttl-minutes: 30
 server:
   port: 8080

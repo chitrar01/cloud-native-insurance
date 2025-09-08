@@ -23,7 +23,7 @@ public class PolicyController {
     }
     
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    @PostMapping
+    @PostMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<PolicyResponse> create(@Valid @RequestBody PolicyCreateRequest req) {
         Policy toSave = new Policy(
                 req.policyNumber(),
@@ -41,10 +41,10 @@ public class PolicyController {
                 saved.getEffectiveDate()
         );
 
-        return ResponseEntity.created(URI.create("/policies/" + saved.getId())).body(resp);
+        return ResponseEntity.created(URI.create("/api/policies/" + saved.getId())).body(resp);
     }
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    @GetMapping
+    @GetMapping(produces = "application/json")
     public List<PolicyResponse> all() {
         return service.findAll().stream()
                 .map(p -> new PolicyResponse(
@@ -54,7 +54,7 @@ public class PolicyController {
     }
 
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    @GetMapping("/{id}")
+    @GetMapping(value="/{id}", produces = "application/json")
     public PolicyResponse one(@PathVariable Long id) {
         var p = service.findById(id);
         return new PolicyResponse(p.getId(), p.getPolicyNumber(), p.getCustomerId(),
@@ -62,7 +62,7 @@ public class PolicyController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{id}")
+    @DeleteMapping(value="/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();

@@ -10,8 +10,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
-
+//import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import java.util.List;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -37,7 +38,7 @@ public class PolicyIntegrationTest {
             """.formatted(java.time.LocalDate.now().plusDays(1));
         // Use mockMvc to perform POST request and verify response
         var createdPolicy = mockMvc.perform(post("/api/policies")
-                .with(httpBasic("user", "password"))
+                .with(jwt().jwt(j -> j.subject("user").claim("roles", List.of("USER"))))
                 .contentType("application/json")
                 .content(requestBody)
             )
@@ -51,7 +52,7 @@ public class PolicyIntegrationTest {
         //Retrieve the created policy via GET /api/policies/{policyNumber}
 
         mockMvc.perform(get("/api/policies/{id}",id)
-            .with(httpBasic("user", "password")))
+            .with(jwt().jwt(j -> j.subject("user").claim("roles", List.of("USER")))))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.policyNumber").value("POL-12345"))
             .andExpect(jsonPath("$.customerId").value("CUST001"))

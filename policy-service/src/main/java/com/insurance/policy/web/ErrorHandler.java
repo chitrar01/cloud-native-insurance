@@ -2,8 +2,12 @@ package com.insurance.policy.web;
 
 import com.insurance.policy.service.DuplicatePolicyNumberException;
 import com.insurance.policy.service.PolicyNotFoundException;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.http.*;
-import org.springframework.http.ProblemDetail;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -44,6 +48,15 @@ public class ErrorHandler {
         pd.setType(URI.create("https://api.example.com/errors/conflict"));
         pd.setDetail(ex.getMessage());
         pd.setProperty("policyNumber", ex.getPolicyNumber());
+        return pd;
+    }
+    @ExceptionHandler({ AuthorizationDeniedException.class, AccessDeniedException.class })
+    public ProblemDetail handleAccessDenied(Exception ex, HttpServletRequest req) {
+        var pd = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
+        pd.setTitle("Forbidden");
+        pd.setType(URI.create("https://api.example.com/errors/forbidden"));
+        pd.setDetail(ex.getMessage());
+        pd.setProperty("path", req.getRequestURI());
         return pd;
     }
 
