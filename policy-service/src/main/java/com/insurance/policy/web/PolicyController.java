@@ -28,8 +28,8 @@ public class PolicyController {
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @PostMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<PolicyDto> create(@Valid @RequestBody PolicyCreateRequest req) {
-        Policy policyCreated = service.create(req);
-        return ResponseEntity.created(URI.create("/api/policies/" + policyCreated.getId())).body(policyCreated);
+        var policyCreated = service.create(req);
+        return ResponseEntity.created(URI.create("/api/policies/" + policyCreated.id())).body(policyCreated);
     }
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping(produces = "application/json")

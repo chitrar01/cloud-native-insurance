@@ -2,7 +2,9 @@ package com.insurance.policy.domain;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+
 import com.insurance.policy.domain.Customer;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
@@ -11,7 +13,7 @@ import lombok.AccessLevel;
 @Table(name = "POLICIES")   
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Policy {
+public class Policy extends Auditable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -2,9 +2,11 @@ package com.insurance.policy.repo;
 
 import com.insurance.policy.domain.Policy;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface PolicyRepository extends JpaRepository<Policy, Long> {
@@ -16,4 +18,12 @@ public interface PolicyRepository extends JpaRepository<Policy, Long> {
      */
     Optional<Policy> findByPolicyNumber(String policyNumber);
     boolean existsByPolicyNumber(String policyNumber);
+
+    @Override
+    @EntityGraph(attributePaths = "customer")
+    List <Policy> findAll();
+
+    @Override
+    @EntityGraph(attributePaths = "customer")
+    Optional<Policy> findById(Long id);
 }

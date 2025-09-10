@@ -32,7 +32,7 @@ public class PolicyService {
     @Transactional
     public PolicyDto create(PolicyCreateRequest req) {
 
-        Customer customer = customers.findByEmail(req.customer().email()).orElseGet(() -> customers.save(PolicyMapper.toCustomerEntity(req.customer)));
+        Customer customer = customers.findByEmail(req.customer().email()).orElseGet(() -> customers.save(PolicyMapper.toCustomerEntity(req.customer())));
         Policy policy = PolicyMapper.toPolicyEntity(req, customer);
 
         var auth = SecurityContextHolder.getContext().getAuthentication();
