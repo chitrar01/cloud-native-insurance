@@ -4,7 +4,7 @@ import com.insurance.policy.domain.Customer;
 import com.insurance.policy.domain.Policy;
 import com.insurance.policy.web.dto.CustomerDto;
 import com.insurance.policy.web.dto.PolicyDto;
-import com.insurnane.policy.web.dto.PolicyCreateRequest;
+import com.insurance.policy.web.dto.PolicyCreateRequest;
 
 
 public final class PolicyMapper {
@@ -23,7 +23,7 @@ public final class PolicyMapper {
     }
 
     public static PolicyDto toPolicyDto (Policy p) {
-        return new PolicyDto (p.getId(), p.getPolicyNumber(), toDto(p.getCustomer()),
+        return new PolicyDto (p.getId(), p.getPolicyNumber(), toCustomerDto(p.getCustomer()),
                     p.getCoverageAmount(),p.getEffectiveDate(),p.getCreatedAt(),p.getUpdatedAt());
     }
 }

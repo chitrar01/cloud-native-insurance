@@ -4,6 +4,7 @@ import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 
 public record PolicyCreateRequest(
+
         @NotBlank(message = "{policy.number.required}")
         @Pattern(regexp = "[A-Z]{3}-\\d{5}", message = "{policy.number.pattern}")
         String policyNumber,
@@ -14,9 +15,9 @@ public record PolicyCreateRequest(
 
         @NotNull(message = "{effective.date.required}")
         @Future(message = "{effective.date.future}")
-        LocalDate effectiveDate
+        LocalDate effectiveDate,
 
-        @NotNull CustomerRequest customer;
+        @NotNull CustomerRequest customer
 ){
     public record CustomerRequest(
             @NotBlank String firstName,

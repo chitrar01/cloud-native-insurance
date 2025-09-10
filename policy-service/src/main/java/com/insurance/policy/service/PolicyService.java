@@ -1,10 +1,16 @@
 package com.insurance.policy.service;
 
 import com.insurance.policy.domain.Policy;
+import com.insurance.policy.domain.Customer;
 import com.insurance.policy.repo.PolicyRepository;
+import com.insurance.policy.repo.CustomerRepository;
+import com.insurance.policy.web.dto.PolicyCreateRequest;
+import com.insurance.policy.web.dto.PolicyDto;
+import com.insurance.policy.service.PolicyMapper;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -23,10 +29,10 @@ public class PolicyService {
         this.customers = customers;
     }
 
-    @Transacational
+    @Transactional
     public PolicyDto create(PolicyCreateRequest req) {
 
-        Customer customer = customers.findByEmail(req.customer().email()).orElseGet() -> customers.save(PolicyMapper.toCustomerEntity(req.customer));
+        Customer customer = customers.findByEmail(req.customer().email()).orElseGet(() -> customers.save(PolicyMapper.toCustomerEntity(req.customer)));
         Policy policy = PolicyMapper.toPolicyEntity(req, customer);
 
         var auth = SecurityContextHolder.getContext().getAuthentication();
@@ -40,12 +46,12 @@ public class PolicyService {
         return PolicyMapper.toPolicyDto(savedPolicy);
 
     }
-    @Transacational(readOnly = true)
+    @Transactional(readOnly = true)
     public List<Policy> findAll() {
         return policies.findAll();
     }
 
-    @Transacational(readOnly = true)
+    @Transactional(readOnly = true)
     public Policy findById(Long id) {
         return policies.findById(id).orElseThrow(() -> new PolicyNotFoundException(id));
     }
@@ -53,6 +59,6 @@ public class PolicyService {
     @Transactional
     public void delete(Long id) {
         if (!policies.existsById(id)) throw new PolicyNotFoundException(id);
-        polciies.deleteById(id);
+        policies.deleteById(id);
     }
 }

@@ -4,7 +4,10 @@ import com.insurance.policy.domain.Policy;
 import com.insurance.policy.service.PolicyService;
 import com.insurance.policy.web.dto.PolicyCreateRequest;
 import com.insurance.policy.web.dto.PolicyDto;
+import com.insurance.policy.service.PolicyMapper;
+
 import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,13 +29,13 @@ public class PolicyController {
     @PostMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<PolicyDto> create(@Valid @RequestBody PolicyCreateRequest req) {
         Policy policyCreated = service.create(req);
-        return ResponseEntity.created(URI.create("/api/policies/" + policyCreated.id())).body(policyCreated);
+        return ResponseEntity.created(URI.create("/api/policies/" + policyCreated.getId())).body(policyCreated);
     }
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping(produces = "application/json")
     public List<PolicyDto> all() {
         return service.findAll().stream()
-                .map(PolicyMapper.toPolicyDto)
+                .map(PolicyMapper::toPolicyDto)
                 .toList();
     }
 
