@@ -2,10 +2,15 @@ package com.insurance.policy.web.dto;
 
 import java.time.LocalDate;
 
-public record PolicyResponse(
+public record PolicyDto(
         Long id,
         String policyNumber,
+        CustomerDto customer;
         String customerId,
         Double coverageAmount,
-        LocalDate effectiveDate
-) {}
+        LocalDate effectiveDate;
+        Instant createdAt;
+        Instant updatedAt;
+) {
+
+}

@@ -14,33 +14,45 @@ import org.slf4j.LoggerFactory;
 @Service
 public class PolicyService {
 
-    private final PolicyRepository repo;
+    private final PolicyRepository policies;
+    private final CustomerRepository customers;
     private static final Logger log = LoggerFactory.getLogger(PolicyService.class);
     
-    public PolicyService(PolicyRepository repo) {
-        this.repo = repo;
+    public PolicyService(PolicyRepository policies, CustomerRepository customers) {
+        this.policies = policies;
+        this.customers = customers;
     }
 
-    public Policy create(Policy policy) {
+    @Transacational
+    public PolicyDto create(PolicyCreateRequest req) {
+
+        Customer customer = customers.findByEmail(req.customer().email()).orElseGet() -> customers.save(PolicyMapper.toCustomerEntity(req.customer));
+        Policy policy = PolicyMapper.toPolicyEntity(req, customer);
+
         var auth = SecurityContextHolder.getContext().getAuthentication();
         var username = (auth != null && auth.isAuthenticated()) ? auth.getName() : "anonymous";
-        if (repo.existsByPolicyNumber(policy.getPolicyNumber())) {
+        if (policies.existsByPolicyNumber(policy.getPolicyNumber())) {
             throw new DuplicatePolicyNumberException(policy.getPolicyNumber());
         }
         log.info("User {} created policy {}", username, policy.getPolicyNumber());
-        return repo.save(policy);
-    }
+        
+        Policy savedPolicy = policies.save(policy);
+        return PolicyMapper.toPolicyDto(savedPolicy);
 
+    }
+    @Transacational(readOnly = true)
     public List<Policy> findAll() {
-        return repo.findAll();
+        return policies.findAll();
     }
 
+    @Transacational(readOnly = true)
     public Policy findById(Long id) {
-        return repo.findById(id).orElseThrow(() -> new PolicyNotFoundException(id));
+        return policies.findById(id).orElseThrow(() -> new PolicyNotFoundException(id));
     }
 
+    @Transactional
     public void delete(Long id) {
-        if (!repo.existsById(id)) throw new PolicyNotFoundException(id);
-        repo.deleteById(id);
+        if (!policies.existsById(id)) throw new PolicyNotFoundException(id);
+        polciies.deleteById(id);
     }
 }

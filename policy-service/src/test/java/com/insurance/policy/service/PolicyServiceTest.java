@@ -20,7 +20,8 @@ public class PolicyServiceTest {
     @Test
     @DisplayName("create: saves policy when policyNumber is unique")
     void testCreatePolicySuccess() {
-        Policy newPolicy = new Policy("POL-12345", "CUST001", 100000.0, java.time.LocalDate.now());
+        Customer customer = new Customer("Alice", "Johnson", "alice.johnosn@abc.com", "0400000000");
+        Policy newPolicy = new Policy("POL-12345", customer, 100000.0, java.time.LocalDate.now());
         when(repo.findByPolicyNumber("POL-12345")).thenReturn(Optional.empty());
         when(repo.save(any(Policy.class))).thenAnswer(i -> i.getArgument(0));
         
@@ -38,8 +39,8 @@ public class PolicyServiceTest {
     @DisplayName("create: throws exception when policyNumber already exists")
     void testCreatePolicyDuplicate() {
         when(repo.existsByPolicyNumber("POL-12345")).thenReturn(true);
-
-        Policy newPolicy = new Policy("POL-12345", "CUST002", 150000.0, java.time.LocalDate.now().plusDays(1));
+        Customer anotherCustomer = new Customer("Alice", "John", "alice.john@abc.com", "0400000000")
+        Policy newPolicy = new Policy("POL-12345", anotherCustomer, 150000.0, java.time.LocalDate.now().plusDays(1));
         
         assertThatThrownBy(() -> policyService.create(newPolicy))
                 .isInstanceOf(DuplicatePolicyNumberException.class)

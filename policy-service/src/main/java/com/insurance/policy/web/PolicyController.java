@@ -3,7 +3,7 @@ package com.insurance.policy.web;
 import com.insurance.policy.domain.Policy;
 import com.insurance.policy.service.PolicyService;
 import com.insurance.policy.web.dto.PolicyCreateRequest;
-import com.insurance.policy.web.dto.PolicyResponse;
+import com.insurance.policy.web.dto.PolicyDto;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,43 +22,25 @@ public class PolicyController {
         this.service = service;
     }
     
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @PostMapping(consumes = "application/json", produces = "application/json")
-    public ResponseEntity<PolicyResponse> create(@Valid @RequestBody PolicyCreateRequest req) {
-        Policy toSave = new Policy(
-                req.policyNumber(),
-                req.customerId(),
-                req.coverageAmount(),
-                req.effectiveDate()
-        );
-        Policy saved = service.create(toSave);
-
-        PolicyResponse resp = new PolicyResponse(
-                saved.getId(),
-                saved.getPolicyNumber(),
-                saved.getCustomerId(),
-                saved.getCoverageAmount(),
-                saved.getEffectiveDate()
-        );
-
-        return ResponseEntity.created(URI.create("/api/policies/" + saved.getId())).body(resp);
+    public ResponseEntity<PolicyDto> create(@Valid @RequestBody PolicyCreateRequest req) {
+        Policy policyCreated = service.create(req);
+        return ResponseEntity.created(URI.create("/api/policies/" + policyCreated.id())).body(policyCreated);
     }
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping(produces = "application/json")
-    public List<PolicyResponse> all() {
+    public List<PolicyDto> all() {
         return service.findAll().stream()
-                .map(p -> new PolicyResponse(
-                        p.getId(), p.getPolicyNumber(), p.getCustomerId(),
-                        p.getCoverageAmount(), p.getEffectiveDate()))
+                .map(PolicyMapper.toPolicyDto)
                 .toList();
     }
 
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping(value="/{id}", produces = "application/json")
-    public PolicyResponse one(@PathVariable Long id) {
+    public PolicyDto one(@PathVariable Long id) {
         var p = service.findById(id);
-        return new PolicyResponse(p.getId(), p.getPolicyNumber(), p.getCustomerId(),
-                p.getCoverageAmount(), p.getEffectiveDate());
+        return PolicyMapper.toPolicyDto(p);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

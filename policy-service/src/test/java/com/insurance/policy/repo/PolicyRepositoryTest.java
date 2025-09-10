@@ -20,7 +20,8 @@ public class PolicyRepositoryTest {
     void testExistsByPolicyNumber() {
         // Given
         String policyNumber = "POL-12345";
-        Policy policy = new Policy(policyNumber, "CUST001", 100000.0, java.time.LocalDate.now());
+        Customer customer = new Customer("Alice", "Johnson", "alice.johnosn@abc.com", "0400000000");
+        Policy policy = new Policy(policyNumber, customer, 100000.0, LocalDate.now().plusDays(1));
         policyRepository.save(policy);
         
         // When
