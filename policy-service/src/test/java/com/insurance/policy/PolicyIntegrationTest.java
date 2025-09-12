@@ -31,7 +31,12 @@ public class PolicyIntegrationTest {
         var requestBody = """
             {
                 "policyNumber": "POL-12345",
-                "customerId": "CUST001",
+                "customer": {
+                    "firstName": "Alice",
+                    "lastName": "Johnson",
+                    "email": "alice.johnson@example.com",
+                    "phone": "0400000000"
+                    },
                 "coverageAmount": 100000.0,
                 "effectiveDate": "%s"
             }
@@ -43,19 +48,25 @@ public class PolicyIntegrationTest {
                 .content(requestBody)
             )
             //.andDo(result -> System.out.println("Create response: " + result.getResponse().getContentAsString()))
-            .andExpect(status().isCreated());
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.policyNumber").value("POL-12345"))
+            .andExpect(jsonPath("$.customer.email").value("alice.johnson@example.com"))
+            .andExpect(jsonPath("$.coverageAmount").value(100000.0))
+            .andExpect(jsonPath("$.createdAt").exists())
+            .andExpect(jsonPath("$.updatedAt").exists())
+            .andReturn();
             //.andExpect(header().string("Location", "/api/policies/POL-12345"));
 
-        var jsonResponse = createdPolicy.andReturn().getResponse().getContentAsString();
-        var id = om.readTree(jsonResponse).get("id").asText();
+        var jsonResponse = createdPolicy.getResponse().getContentAsString();
+        var id = om.readTree(jsonResponse).get("id").asLong();
 
-        //Retrieve the created policy via GET /api/policies/{policyNumber}
-
+        
+        //Retrieve the created policy via GET /api/policies/{id}
         mockMvc.perform(get("/api/policies/{id}",id)
             .with(jwt().jwt(j -> j.subject("user").claim("roles", List.of("USER")))))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.policyNumber").value("POL-12345"))
-            .andExpect(jsonPath("$.customerId").value("CUST001"))
+            .andExpect(jsonPath("$.customer.email").value("alice.johnson@example.com"))
             .andExpect(jsonPath("$.coverageAmount").value(100000.0));
     }
 
